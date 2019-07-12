@@ -591,20 +591,17 @@ int main(int argc, char * argv[])
         std::cerr << "No backend specified through command line argument, "
                      "trying auto resolution" << std::endl;
         if (hasWaylandOption && qEnvironmentVariableIsSet("WAYLAND_DISPLAY")) {
-            pluginName = s_waylandPlugin;
-        }
-        if (hasX11Option && qEnvironmentVariableIsSet("DISPLAY")) {
-            pluginName = s_x11Plugin;
-        }
-        if (hasHwcomposerOption && qEnvironmentVariableIsSet("ANDROID_ROOT")) {
-            pluginName = s_hwcomposerPlugin;
-        }
-        if (hasDrmOption) {
-            pluginName = s_drmPlugin;
+            pluginName = KWin::s_waylandPlugin;
+        } else if (hasX11Option && qEnvironmentVariableIsSet("DISPLAY")) {
+            pluginName = KWin::s_x11Plugin;
+        } else if (hasHwcomposerOption && qEnvironmentVariableIsSet("ANDROID_ROOT")) {
+            pluginName = KWin::s_hwcomposerPlugin;
+        } else if (hasDrmOption) {
+            pluginName = KWin::s_drmPlugin;
         } else {
-            pluginName = s_fbdevPlugin;
+            pluginName = KWin::s_fbdevPlugin;
         }
-        std::cerr << "Automatically chosen backend:" << qPrintable(pluginName);
+        std::cerr << "Automatically chosen backend:" << qPrintable(pluginName) << std::endl;
     }
 
     auto pluginIt = std::find_if(availablePlugins.begin(), availablePlugins.end(),
