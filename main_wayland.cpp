@@ -604,6 +604,7 @@ int main(int argc, char * argv[])
         } else {
             pluginName = s_fbdevPlugin;
         }
+        std::cerr << "Automatically chosen backend:" << qPrintable(pluginName);
     }
 
     auto pluginIt = std::find_if(availablePlugins.begin(), availablePlugins.end(),
