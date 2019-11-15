@@ -408,7 +408,28 @@ int main(int argc, char * argv[])
     KWin::Application::createAboutData();
     KQuickAddons::QtQuickSettings::init();
 
-    const auto availablePlugins = KPluginLoader::findPlugins(QStringLiteral("org.kde.kwin.waylandbackends"));
+    // load all plugins metadata
+    QVector<KPluginMetaData> availablePlugins = KPluginLoader::findPlugins(QStringLiteral("org.kde.kwin.waylandbackends"));
+    // sort plugins descending by autoLoadPriority from JSON metadata
+    std::sort(availablePlugins.begin(), availablePlugins.end(),
+        [] (const KPluginMetaData &a, const KPluginMetaData &b) -> bool {
+            int prio1 = 0, prio2 = 0;
+            QJsonObject jsonData = a.rawData();
+            auto it = jsonData.find(QStringLiteral("autoLoadPriority"));
+            if (it != jsonData.end()) {
+                if ((*it).isDouble()) {
+                    prio1 = static_cast<int>((*it).toDouble());
+                }
+            }
+            jsonData = b.rawData();
+            it = jsonData.find(QStringLiteral("autoLoadPriority"));
+            if (it != jsonData.end()) {
+                if ((*it).isDouble()) {
+                    prio2 = static_cast<int>((*it).toDouble());
+                }
+            }
+            return prio2 < prio1;
+    });
     auto hasPlugin = [&availablePlugins] (const QString &name) {
         return std::any_of(availablePlugins.begin(), availablePlugins.end(),
             [name] (const KPluginMetaData &plugin) {
@@ -416,6 +437,7 @@ int main(int argc, char * argv[])
             }
         );
     };
+
     const bool hasSizeOption = hasPlugin(KWin::s_x11Plugin) || hasPlugin(KWin::s_virtualPlugin);
     const bool hasOutputCountOption = hasPlugin(KWin::s_x11Plugin);
     const bool hasX11Option = hasPlugin(KWin::s_x11Plugin);
