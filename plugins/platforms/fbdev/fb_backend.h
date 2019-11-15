@@ -89,6 +89,8 @@ public:
         return QVector<CompositingType>{QPainterCompositing};
     }
 
+    bool canLoad() override;
+
 private:
     void openFrameBuffer();
     bool handleScreenInfo();

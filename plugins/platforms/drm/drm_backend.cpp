@@ -176,6 +176,17 @@ void DrmBackend::checkOutputsAreOn()
     m_dpmsFilter.reset();
 }
 
+bool DrmBackend::canLoad()
+{
+    // basic sanity check like in openDrm() function
+    UdevDevice::Ptr device = m_udev->primaryGpu();
+    if (device) {
+        return true;
+    }
+    // no GPU - no drm backend
+    return false;
+}
+
 void DrmBackend::activate(bool active)
 {
     if (active) {

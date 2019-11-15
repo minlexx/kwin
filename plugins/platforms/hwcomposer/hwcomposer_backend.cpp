@@ -392,6 +392,27 @@ void HwcomposerBackend::wakeVSync()
     m_vsyncMutex.unlock();
 }
 
+bool HwcomposerBackend::canLoad()
+{
+    // try to open hwc module & device, like in init()
+    hw_module_t *hwcModule = nullptr;
+    if (hw_get_module(HWC_HARDWARE_MODULE_ID, (const hw_module_t **)&hwcModule) != 0) {
+        qCWarning(KWIN_HWCOMPOSER) << "Failed to get hwcomposer module";
+        return false;
+    }
+
+    hwc_composer_device_1_t *hwcDevice = nullptr;
+    if (hwc_open_1(hwcModule, &hwcDevice) != 0) {
+        qCWarning(KWIN_HWCOMPOSER) << "Failed to open hwcomposer device";
+        return false;
+    }
+
+    // close device method in nougat branch:
+    // https://github.com/ubports/android-headers/blob/xenial/24-caf/hardware/hwcomposer.h#L794
+    hwc_close_1(hwcDevice);
+    return true;
+}
+
 static void initLayer(hwc_layer_1_t *layer, const hwc_rect_t &rect, int layerCompositionType)
 {
     memset(layer, 0, sizeof(hwc_layer_1_t));

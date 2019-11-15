@@ -558,4 +558,13 @@ Outputs X11StandalonePlatform::enabledOutputs() const
     return m_outputs;
 }
 
+bool X11StandalonePlatform::canLoad()
+{
+    // basically, repeat check from init() function
+    if (!QX11Info::isPlatformX11()) {
+        return false;
+    }
+    return true;
+}
+
 }

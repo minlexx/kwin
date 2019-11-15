@@ -64,6 +64,8 @@ public:
         return QVector<CompositingType>{OpenGLCompositing, QPainterCompositing};
     }
 
+    bool canLoad() override;
+
 Q_SIGNALS:
     void virtualOutputsSet(bool countChanged);
 

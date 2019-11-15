@@ -276,4 +276,16 @@ Outputs FramebufferBackend::enabledOutputs() const
     return m_outputs;
 }
 
+bool FramebufferBackend::canLoad()
+{
+    // try to open framebuffer almost the same way as in openFrameBuffer()
+    const QString framebufferDevice = QString(Udev().primaryFramebuffer()->devNode());
+    int fd = open(framebufferDevice.toUtf8().constData(), O_RDWR | O_CLOEXEC);
+    if (fd < 0) {
+        return false;
+    }
+    close(fd);
+    return true;
+}
+
 }

@@ -84,6 +84,8 @@ public:
     Outputs outputs() const override;
     Outputs enabledOutputs() const override;
 
+    bool canLoad() override;
+
 Q_SIGNALS:
     void sizeChanged();
 

@@ -101,6 +101,8 @@ public:
         return QVector<CompositingType>{OpenGLCompositing};
     }
 
+    bool canLoad() override;
+
 Q_SIGNALS:
     void outputBlankChanged();
 

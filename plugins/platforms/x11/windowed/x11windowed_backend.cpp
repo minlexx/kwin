@@ -540,4 +540,25 @@ Outputs X11WindowedBackend::enabledOutputs() const
     return m_outputs;
 }
 
+bool X11WindowedBackend::canLoad()
+{
+    // test X11 connection, almost like in init()
+    const QByteArray x11display = qgetenv("DISPLAY");
+    if (x11display.isEmpty()) {
+        return false;
+    }
+    xcb_connection_t *conn = nullptr;
+    Display *xDisplay = XOpenDisplay(x11display.constData());
+    if (!xDisplay) {
+        return false;
+    }
+    conn = XGetXCBConnection(xDisplay);
+    if (!conn || xcb_connection_has_error(conn)) {
+        return false;
+    }
+    xcb_disconnect(conn);
+    XCloseDisplay(xDisplay);
+    return true;
+}
+
 }

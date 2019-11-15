@@ -65,6 +65,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <linux/input.h>
 #include <wayland-cursor.h>
+#include <wayland-client.h>
 
 namespace KWin
 {
@@ -831,6 +832,22 @@ Outputs WaylandBackend::enabledOutputs() const
 {
     // all outputs are enabled
     return m_outputs;
+}
+
+bool WaylandBackend::canLoad()
+{
+    // Try at least to connect to wayland display
+    //  (and immediately disconnect in case of success)
+    const QByteArray waylandDisplay = qgetenv("WAYLAND_DISPLAY");
+    if (waylandDisplay.isNull()) {
+        return false;
+    }
+    struct wl_display *disp = wl_display_connect(waylandDisplay.constData());
+    if (!disp) {
+        return false;
+    }
+    wl_display_disconnect(disp);
+    return true;
 }
 
 }

@@ -456,6 +456,16 @@ public:
         m_selectedCompositor = type;
     }
 
+    /**
+     * This method should perform quick preliminary test during plugin
+     * autodetection phase (when no explicit plugin was specified).
+     * Test that this plugin has at least a chance to load, with all
+     * parameters set to default.
+     * @return true, if it's possible to use this platform plugin
+     * @since 5.18
+     */
+    virtual bool canLoad() = 0;
+
 public Q_SLOTS:
     void pointerMotion(const QPointF &position, quint32 time);
     void pointerButtonPressed(quint32 button, quint32 time);

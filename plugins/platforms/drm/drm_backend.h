@@ -121,6 +121,8 @@ public:
         return m_devNode;
     }
 
+    bool canLoad() override;
+
 #if HAVE_EGL_STREAMS
     bool useEglStreams() const {
         return m_useEglStreams;

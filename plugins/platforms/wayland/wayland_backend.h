@@ -213,6 +213,8 @@ public:
         return m_outputs;
     }
 
+    bool canLoad() override;
+
 Q_SIGNALS:
     void outputAdded(WaylandOutput *output);
     void outputRemoved(WaylandOutput *output);
