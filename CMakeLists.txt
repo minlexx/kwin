@@ -164,7 +164,7 @@ if (epoxy_HAS_GLX)
     endif()
 endif()
 
-find_package(Wayland 1.2 REQUIRED COMPONENTS Cursor OPTIONAL_COMPONENTS Egl)
+find_package(Wayland 1.2 REQUIRED COMPONENTS Client Cursor OPTIONAL_COMPONENTS Egl)
 set_package_properties(Wayland PROPERTIES
     TYPE REQUIRED
     PURPOSE "Required for building KWin with Wayland support"
@@ -619,6 +619,7 @@ set(kwin_XCB_LIBS
 set(kwin_WAYLAND_LIBS
     KF5::WaylandClient
     KF5::WaylandServer
+    Wayland::Client
     Wayland::Cursor
     XKB::XKB
     ${CMAKE_THREAD_LIBS_INIT}
