@@ -277,32 +277,10 @@ void ApplicationWayland::startSession()
 static const QString s_waylandPlugin = QStringLiteral("KWinWaylandWaylandBackend");
 static const QString s_x11Plugin = QStringLiteral("KWinWaylandX11Backend");
 static const QString s_fbdevPlugin = QStringLiteral("KWinWaylandFbdevBackend");
-#if HAVE_DRM
 static const QString s_drmPlugin = QStringLiteral("KWinWaylandDrmBackend");
-#endif
-#if HAVE_LIBHYBRIS
 static const QString s_hwcomposerPlugin = QStringLiteral("KWinWaylandHwcomposerBackend");
-#endif
 static const QString s_virtualPlugin = QStringLiteral("KWinWaylandVirtualBackend");
 
-static QString automaticBackendSelection()
-{
-    if (qEnvironmentVariableIsSet("WAYLAND_DISPLAY")) {
-        return s_waylandPlugin;
-    }
-    if (qEnvironmentVariableIsSet("DISPLAY")) {
-        return s_x11Plugin;
-    }
-#if HAVE_LIBHYBRIS
-    if (qEnvironmentVariableIsSet("ANDROID_ROOT")) {
-        return s_hwcomposerPlugin;
-    }
-#endif
-#if HAVE_DRM
-    return s_drmPlugin;
-#endif
-    return s_fbdevPlugin;
-}
 
 static void disablePtrace()
 {
@@ -444,12 +422,8 @@ int main(int argc, char * argv[])
     const bool hasVirtualOption = hasPlugin(KWin::s_virtualPlugin);
     const bool hasWaylandOption = hasPlugin(KWin::s_waylandPlugin);
     const bool hasFramebufferOption = hasPlugin(KWin::s_fbdevPlugin);
-#if HAVE_DRM
     const bool hasDrmOption = hasPlugin(KWin::s_drmPlugin);
-#endif
-#if HAVE_LIBHYBRIS
     const bool hasHwcomposerOption = hasPlugin(KWin::s_hwcomposerPlugin);
-#endif
 
     QCommandLineOption xwaylandOption(QStringLiteral("xwayland"),
                                       i18n("Start a rootless Xwayland server."));
@@ -512,21 +486,17 @@ int main(int argc, char * argv[])
     if (hasOutputCountOption) {
         parser.addOption(outputCountOption);
     }
-#if HAVE_LIBHYBRIS
     QCommandLineOption hwcomposerOption(QStringLiteral("hwcomposer"), i18n("Use libhybris hwcomposer"));
     if (hasHwcomposerOption) {
         parser.addOption(hwcomposerOption);
     }
-#endif
     QCommandLineOption libinputOption(QStringLiteral("libinput"),
                                       i18n("Enable libinput support for input events processing. Note: never use in a nested session."));
     parser.addOption(libinputOption);
-#if HAVE_DRM
     QCommandLineOption drmOption(QStringLiteral("drm"), i18n("Render through drm node."));
     if (hasDrmOption) {
         parser.addOption(drmOption);
     }
-#endif
 
     QCommandLineOption inputMethodOption(QStringLiteral("inputmethod"),
                                          i18n("Input method that KWin starts."),
@@ -584,12 +554,6 @@ int main(int argc, char * argv[])
     int outputCount = 1;
     qreal outputScale = 1;
 
-#if HAVE_DRM
-    if (hasDrmOption && parser.isSet(drmOption)) {
-        pluginName = KWin::s_drmPlugin;
-    }
-#endif
-
     if (hasSizeOption) {
         bool ok = false;
         const int width = parser.value(widthOption).toInt(&ok);
@@ -620,6 +584,10 @@ int main(int argc, char * argv[])
         }
     }
 
+    // decide which backend plugin to load based on command-line arguments
+    if (hasDrmOption && parser.isSet(drmOption)) {
+        pluginName = KWin::s_drmPlugin;
+    }
     if (hasX11Option && parser.isSet(x11DisplayOption)) {
         deviceIdentifier = parser.value(x11DisplayOption).toUtf8();
         pluginName = KWin::s_x11Plugin;
@@ -632,18 +600,27 @@ int main(int argc, char * argv[])
         pluginName = KWin::s_fbdevPlugin;
         deviceIdentifier = parser.value(framebufferDeviceOption).toUtf8();
     }
-#if HAVE_LIBHYBRIS
     if (hasHwcomposerOption && parser.isSet(hwcomposerOption)) {
         pluginName = KWin::s_hwcomposerPlugin;
     }
-#endif
     if (hasVirtualOption && parser.isSet(virtualFbOption)) {
         pluginName = KWin::s_virtualPlugin;
     }
 
     if (pluginName.isEmpty()) {
-        std::cerr << "No backend specified through command line argument, trying auto resolution" << std::endl;
-        pluginName = KWin::automaticBackendSelection();
+        std::cerr << "No backend specified through command line argument, "
+                     "trying auto resolution" << std::endl;
+        // plugins are sorted  by priority in descending order; so,
+        //   take first one that "agrees" to load
+        for (KPluginMetaData &plugin: availablePlugins) {
+            KWin::Platform *backendPlugin = qobject_cast<KWin::Platform *>(plugin.instantiate());
+            if (backendPlugin->canLoad()) {
+                pluginName = plugin.pluginId();
+                std::cerr << "Automatically chosen wayland backend:" << qPrintable(plugin.name()) << std::endl;
+                break;
+            }
+            delete backendPlugin;
+        }
     }
 
     auto pluginIt = std::find_if(availablePlugins.begin(), availablePlugins.end(),
