@@ -75,5 +75,6 @@
         "Name[zh_CN]": "framebuffer",
         "Name[zh_TW]": "framebuffer"
     },
-    "input": false
+    "input": false,
+    "autoLoadPriority": 20
 }

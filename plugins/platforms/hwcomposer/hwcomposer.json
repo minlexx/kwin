@@ -75,5 +75,6 @@
         "Name[zh_CN]": "hwcomposer",
         "Name[zh_TW]": "hwcomposer"
     },
-    "input": false
+    "input": false,
+    "autoLoadPriority": 60
 }

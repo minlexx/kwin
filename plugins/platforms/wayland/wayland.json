@@ -75,5 +75,6 @@
         "Name[zh_CN]": "wayland",
         "Name[zh_TW]": "wayland"
     },
-    "input": true
+    "input": true,
+    "autoLoadPriority": 100
 }

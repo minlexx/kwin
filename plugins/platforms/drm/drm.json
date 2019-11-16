@@ -75,5 +75,6 @@
         "Name[zh_CN]": "drm",
         "Name[zh_TW]": "drm"
     },
-    "input": false
+    "input": false,
+    "autoLoadPriority": 40
 }
